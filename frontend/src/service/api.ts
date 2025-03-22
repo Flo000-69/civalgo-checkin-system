@@ -39,3 +39,24 @@ export async function getOnSiteWorkers(): Promise<CheckInEvent[]> {
 
   return response.json();
 }
+
+export async function getHistory(filters: {
+    name?: string;
+    siteId?: string;
+    from?: string;
+    to?: string;
+  }): Promise<CheckInEvent[]> {
+    const params = new URLSearchParams();
+    if (filters.name) params.append('name', filters.name);
+    if (filters.siteId) params.append('siteId', filters.siteId);
+    if (filters.from) params.append('from', filters.from);
+    if (filters.to) params.append('to', filters.to);
+  
+    const response = await fetch(`${API_URL}/history?${params.toString()}`);
+    
+    if (!response.ok) {
+      throw new Error('Failed to fetch history');
+    }
+  
+    return response.json();
+  }

@@ -70,6 +70,43 @@ app.get('/on-site', async (req, res) => {
     }
 });
 
+app.get('/history', async (req, res) => {
+  const { name, siteId, from, to } = req.query;
+
+  let query = 'SELECT * FROM check_events WHERE 1=1';
+  const values: any[] = [];
+
+  if (name) {
+    values.push(`%${name}%`);
+    query += ` AND name ILIKE $${values.length}`;
+  }
+
+  if (siteId) {
+    values.push(`%${siteId}%`);
+    query += ` AND site_id ILIKE $${values.length}`;
+  }
+
+  if (from) {
+    values.push(from);
+    query += ` AND timestamp >= $${values.length}`;
+  }
+
+  if (to) {
+    values.push(to);
+    query += ` AND timestamp <= $${values.length}`;
+  }
+
+  query += ' ORDER BY timestamp DESC';
+
+  try {
+    const result = await pool.query(query, values);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching history:', err);
+    res.status(500).send('Failed to fetch history');
+  }
+});
+
 app.listen(process.env.SERVER_PORT, () => {
   console.log(`Server running on http://localhost:${process.env.SERVER_PORT}`);
 });
