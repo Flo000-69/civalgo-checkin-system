@@ -1,0 +1,45 @@
+services:
+
+  backend:
+    image: backend:1.0
+    container_name: ${SERVER_HOST}
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    volumes:
+      - ./backend:/backend
+      - backend-v-node-modules:/backend/node_modules
+    depends_on:
+      database:
+        condition: service_healthy
+    
+  database:
+    image: database:1.0
+    container_name: ${POSTGRES_HOST}
+    build:
+      context: ./database
+      dockerfile: Dockerfile
+    env_file:
+      - .env
+    ports:
+      - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    volumes:
+      - database-v:/var/lib/postgresql/data
+    command: "-p ${POSTGRES_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -p ${POSTGRES_PORT} -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 0s
+
+
+volumes:
+  backend-v-node-modules:
+    name: "civalgo-backend-v-node-modules"
+  database-v:
+    name: "civalgo-database-v"
