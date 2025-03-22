@@ -25,12 +25,12 @@ main()
     .catch(err => console.log('Error connecting to Postgres', err));
 
 app.post('/check-in', async (req, res) => {
-  const { name, siteId } = req.body;
+  const { name, site_id } = req.body;
   try {
     const client = await pool.connect();
     const result = await client.query(
       'INSERT INTO check_events (name, site_id, type) VALUES ($1, $2, $3) RETURNING *',
-      [name, siteId, 'in']
+      [name, site_id, 'in']
     );
     res.status(201).json((result).rows[0]);
   } catch (err) {
@@ -40,11 +40,11 @@ app.post('/check-in', async (req, res) => {
 });
 
 app.post('/check-out', async (req, res) => {
-    const { name, siteId } = req.body;
+    const { name, site_id } = req.body;
     try {
       const result = await pool.query(
         'INSERT INTO check_events (name, site_id, type) VALUES ($1, $2, $3) RETURNING *',
-        [name, siteId, 'out']
+        [name, site_id, 'out']
       );
       res.status(201).json(result.rows[0]);
     } catch (err) {
@@ -70,6 +70,6 @@ app.get('/on-site', async (req, res) => {
     }
 });
 
-app.listen(3000, () => {
-  console.log('✅ Server running on http://localhost:3000');
+app.listen(process.env.SERVER_PORT, () => {
+  console.log(`Server running on http://localhost:${process.env.SERVER_PORT}`);
 });
